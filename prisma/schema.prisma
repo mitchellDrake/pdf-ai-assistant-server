@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL") // your MongoDB URI
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pdfs PDF[] @relation("UserPDFs")
+  chats Chat[] @relation("UserChats")  
+}
+
+model PDF {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  fileName  String
+  fileUrl   String
+  numPages  Int
+  pages     String[] 
+  createdAt DateTime @default(now())
+
+  user User @relation("UserPDFs", fields: [userId], references: [id])
+  chunks PDFChunk[]
+  chats Chat[] @relation("PDFChats") 
+}
+
+model PDFChunk {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  pdfId     String
+  page      Int      // page number
+  sentenceIndex Int  // sentence position on the page
+  text      String
+  embedding Float[]
+
+  pdf PDF @relation(fields: [pdfId], references: [id])
+}
+
+model Chat {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String
+  pdfId     String
+  createdAt DateTime  @default(now())
+
+  user  User @relation("UserChats", fields: [userId], references: [id])
+  pdf   PDF  @relation("PDFChats", fields: [pdfId], references: [id])
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String
+  role      String   // 'user' | 'assistant' | 'system'
+  parts     Json     // store full parts array
+  content   String?  
+  createdAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [id])
+}

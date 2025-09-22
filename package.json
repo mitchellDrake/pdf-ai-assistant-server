@@ -1,0 +1,36 @@
+{
+  "name": "resume-node-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.32",
+    "@prisma/client": "^6.16.2",
+    "@supabase/supabase-js": "^2.57.4",
+    "ai": "^5.0.47",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.20.0",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
+    "openai": "^5.22.0",
+    "pdf-parse": "^1.1.1",
+    "pdf2json": "^3.2.2",
+    "pdfjs": "^2.5.4",
+    "pdfjs-dist": "^3.6.172",
+    "prisma": "^6.16.2",
+    "sentence-splitter": "^5.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}
