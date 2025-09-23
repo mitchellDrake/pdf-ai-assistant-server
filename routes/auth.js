@@ -20,7 +20,7 @@ router.post('/signup', async (req, res) => {
 
     res.json({ id: user.id, email: user.email });
   } catch (err) {
-    console.log(err);
+    console.log('signup error', err);
     res
       .status(400)
       .json({ error: 'User already exists or invalid data', errMessage: err });
@@ -44,7 +44,8 @@ router.post('/login', async (req, res) => {
 
     res.json({ token, user: { id: user.id, email: user.email } });
   } catch (err) {
-    res.status(500).json({ error: 'Login failed' });
+    console.log('login error', err);
+    res.status(500).json({ error: 'Login failed', errMessage: err });
   }
 });
 
