@@ -9,6 +9,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const authenticateToken = require('../middleware/auth.js');
 const { storeEmbeddings } = require('../prisma/embeddings.js');
+const { taskQueue } = require('../utils/queue.js');
 
 router.post('/parse', async (req, res) => {
   try {
@@ -148,6 +149,7 @@ router.post(
             return text;
           }),
       };
+
       const data = await pdf(pdfData, options);
 
       // Store PDF record in Prisma
@@ -162,17 +164,64 @@ router.post(
       });
 
       const pdfId = pdfRecord.id;
+      res.json({ pdf: pdfRecord });
 
-      await storeEmbeddings(pdfId, pagesText);
+      // add embedding to local queue so user doesnt need to wait
+      taskQueue.add(
+        async () => {
+          await storeEmbeddings(pdfId, pagesText);
+        },
+        `embeddings-${pdfId}`,
+        pdfId
+      );
 
       // create embeds
-
-      res.json({ pdf: pdfRecord });
     } catch (err) {
       console.error('PDF upload failed:', err);
       res.status(500).json({ error: 'Failed to upload PDF' });
     }
   }
 );
+
+router.get('/status/:id', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  console.log('checking status');
+  const pdfId = req.params.id;
+  let counter = 0;
+  const getTaskStatus = () => {
+    const tasks = taskQueue.list({ pdfId });
+    if (tasks.length > 0) return tasks[0].status;
+    return 'pending';
+  };
+
+  // Write the status every 2 seconds
+  const interval = setInterval(() => {
+    const status = getTaskStatus();
+
+    if (counter > 4) {
+      res.write(
+        `data: ${JSON.stringify({ status: 'Still Generating vectors...' })}\n\n`
+      );
+    } else {
+      res.write(
+        `data: ${JSON.stringify({ status: 'Generating vectors...' })}\n\n`
+      );
+    }
+
+    if (status === 'done' || status === 'failed') {
+      res.write(`data: ${JSON.stringify({ status })}\n\n`);
+      clearInterval(interval);
+      res.end();
+    }
+    counter++;
+  }, 2000);
+
+  // Optional: send initial status immediately without waiting 2s
+  res.write(
+    `data: ${JSON.stringify({ status: 'Breaking into little pieces...' })}\n\n`
+  );
+});
 
 module.exports = router;

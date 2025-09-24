@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 // Store embeddings
 async function storeEmbeddings(pdfId, pagesText) {
   try {
+    console.log('running store embedding');
     for (let pageIndex = 0; pageIndex < pagesText.length; pageIndex++) {
       const pageText = pagesText[pageIndex];
 
@@ -34,7 +35,9 @@ async function storeEmbeddings(pdfId, pagesText) {
           data: chunksData,
         });
       }
+      // console.log(chunksData);
     }
+
     return true;
   } catch (error) {
     console.log('error in storeEmbeddings', error);
