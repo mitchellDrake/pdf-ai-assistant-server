@@ -20,6 +20,7 @@ router.post('/signup', async (req, res) => {
 
     res.json({ id: user.id, email: user.email });
   } catch (err) {
+    console.log('signup error'.err);
     res.status(400).json({
       error: 'User already exists or invalid data',
       errorMessage: err,
