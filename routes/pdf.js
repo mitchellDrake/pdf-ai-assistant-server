@@ -218,7 +218,6 @@ router.get('/status/:id', (req, res) => {
     counter++;
   }, 2000);
 
-  // Optional: send initial status immediately without waiting 2s
   res.write(
     `data: ${JSON.stringify({ status: 'Breaking into little pieces...' })}\n\n`
   );
